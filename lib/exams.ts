@@ -1,7 +1,5 @@
 import { neon } from "@neondatabase/serverless"
 
-const sql = neon(process.env.DATABASE_URL!)
-
 export interface ExamAttempt {
   id: string
   participant_id: string
@@ -33,6 +31,7 @@ export async function createExamAttempt(
   subject: string,
   phase: string,
 ): Promise<ExamAttempt> {
+  const sql = neon(process.env.DATABASE_URL!)
   const result = await sql`
     INSERT INTO exam_attempts (
       participant_id, olympiad_id, subject, phase, status, started_at
@@ -46,6 +45,7 @@ export async function createExamAttempt(
 }
 
 export async function getExamAttempt(attemptId: string): Promise<ExamAttempt | null> {
+  const sql = neon(process.env.DATABASE_URL!)
   const result = await sql`
     SELECT * FROM exam_attempts WHERE id = ${attemptId}
   `
@@ -59,6 +59,7 @@ export async function submitExamAnswers(
   answers: Record<string, number>,
   correctAnswers: Record<string, number>,
 ): Promise<number> {
+  const sql = neon(process.env.DATABASE_URL!)
   // Calculate score
   let correctCount = 0
   for (const [questionId, userAnswer] of Object.entries(answers)) {
@@ -85,6 +86,7 @@ export async function submitExamAnswers(
 }
 
 export async function checkAndEliminateParticipants(olympiadId: string, currentPhase: string): Promise<number> {
+  const sql = neon(process.env.DATABASE_URL!)
   let eliminatedCount = 0
 
   if (currentPhase === "Quiz") {
@@ -175,6 +177,7 @@ export async function getExamForParticipant(
   phase: string,
   adminId: string,
 ): Promise<any> {
+  const sql = neon(process.env.DATABASE_URL!)
   // Get education level
   const participantData = (await sql`
     SELECT p.education_level FROM participants p

@@ -1,8 +1,6 @@
 import { neon } from "@neondatabase/serverless"
 import bcrypt from "bcryptjs"
 
-const sql = neon(process.env.DATABASE_URL!)
-
 export interface Admin {
   id: string
   email: string
@@ -19,6 +17,7 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 }
 
 export async function loginAdmin(email: string, password: string): Promise<Admin | null> {
+  const sql = neon(process.env.DATABASE_URL!)
   const result = await sql`
     SELECT id, email, full_name, password_hash FROM admins WHERE email = ${email}
   `
@@ -39,6 +38,7 @@ export async function loginAdmin(email: string, password: string): Promise<Admin
 }
 
 export async function getAdminById(id: string): Promise<Admin | null> {
+  const sql = neon(process.env.DATABASE_URL!)
   const result = await sql`
     SELECT id, email, full_name, created_at FROM admins WHERE id = ${id}
   `
@@ -48,6 +48,7 @@ export async function getAdminById(id: string): Promise<Admin | null> {
 }
 
 export async function createAdmin(email: string, password: string, fullName: string): Promise<Admin> {
+  const sql = neon(process.env.DATABASE_URL!)
   const passwordHash = await hashPassword(password)
 
   const result = await sql`

@@ -1,8 +1,6 @@
 import { neon } from "@neondatabase/serverless"
 import bcrypt from "bcryptjs"
 
-const sql = neon(process.env.DATABASE_URL!)
-
 export interface Guardian {
   id: string
   email: string
@@ -38,6 +36,7 @@ export async function createGuardian(
   address: string,
   phoneNumber: string,
 ): Promise<Guardian> {
+  const sql = neon(process.env.DATABASE_URL!)
   const passwordHash = await hashPassword(password)
 
   const result = await sql`
@@ -51,6 +50,7 @@ export async function createGuardian(
 }
 
 export async function loginGuardian(email: string, password: string): Promise<Guardian | null> {
+  const sql = neon(process.env.DATABASE_URL!)
   const result = await sql`
     SELECT id, email, full_name, password_hash, phone_number FROM guardians WHERE email = ${email}
   `
@@ -71,6 +71,7 @@ export async function loginGuardian(email: string, password: string): Promise<Gu
 }
 
 export async function getGuardianById(id: string): Promise<Guardian | null> {
+  const sql = neon(process.env.DATABASE_URL!)
   const result = await sql`
     SELECT id, email, full_name, phone_number FROM guardians WHERE id = ${id}
   `
@@ -91,6 +92,7 @@ export async function createParticipant(
   schoolIdFrontUrl?: string,
   schoolIdBackUrl?: string,
 ): Promise<Participant> {
+  const sql = neon(process.env.DATABASE_URL!)
   // Validate age based on education level
   const today = new Date()
   const age = today.getFullYear() - dateOfBirth.getFullYear()
@@ -124,6 +126,7 @@ export async function createParticipant(
 }
 
 export async function getParticipantById(id: string): Promise<Participant | null> {
+  const sql = neon(process.env.DATABASE_URL!)
   const result = await sql`
     SELECT * FROM participants WHERE id = ${id}
   `
@@ -133,6 +136,7 @@ export async function getParticipantById(id: string): Promise<Participant | null
 }
 
 export async function getParticipantsByGuardian(guardianId: string): Promise<Participant[]> {
+  const sql = neon(process.env.DATABASE_URL!)
   const result = await sql`
     SELECT * FROM participants WHERE guardian_id = ${guardianId}
   `

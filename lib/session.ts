@@ -1,5 +1,5 @@
 import { cookies } from "next/headers"
-import { jwtVerify, jwtSign } from "jose"
+import { jwtVerify, SignJWT } from "jose"
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET || "your-secret-key-change-in-production")
 
@@ -11,7 +11,11 @@ export interface AdminSession {
 
 export async function createAdminSession(adminId: string, email: string, fullName: string) {
   const session: AdminSession = { adminId, email, fullName }
-  const token = await jwtSign(session, secret)
+  const token = await new SignJWT(session)
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("7d")
+    .sign(secret)
   const cookieStore = await cookies()
   cookieStore.set("admin_session", token, {
     httpOnly: true,

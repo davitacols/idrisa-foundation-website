@@ -1,7 +1,5 @@
 import { neon } from "@neondatabase/serverless"
 
-const sql = neon(process.env.DATABASE_URL!)
-
 export interface Olympiad {
   id: string
   name: string
@@ -31,6 +29,7 @@ export async function createOlympiad(
   closingDate: Date,
   venue: string,
 ): Promise<Olympiad> {
+  const sql = neon(process.env.DATABASE_URL!)
   // Validate date range (3-5 months = 90-150 days)
   const daysDiff = Math.floor((closingDate.getTime() - startingDate.getTime()) / (1000 * 60 * 60 * 24))
   if (daysDiff < 90 || daysDiff > 150) {
@@ -73,6 +72,7 @@ export async function createOlympiad(
 }
 
 export async function getOlympiadsByAdmin(adminId: string): Promise<Olympiad[]> {
+  const sql = neon(process.env.DATABASE_URL!)
   const result = await sql`
     SELECT * FROM olympiads WHERE admin_id = ${adminId}
     ORDER BY created_at DESC
@@ -81,6 +81,7 @@ export async function getOlympiadsByAdmin(adminId: string): Promise<Olympiad[]> 
 }
 
 export async function getOlympiadById(id: string): Promise<Olympiad | null> {
+  const sql = neon(process.env.DATABASE_URL!)
   const result = await sql`
     SELECT * FROM olympiads WHERE id = ${id}
   `
@@ -88,6 +89,7 @@ export async function getOlympiadById(id: string): Promise<Olympiad | null> {
 }
 
 export async function getOlympiadPhases(olympiadId: string): Promise<OlympiadPhase[]> {
+  const sql = neon(process.env.DATABASE_URL!)
   const result = await sql`
     SELECT * FROM olympiad_phases WHERE olympiad_id = ${olympiadId}
     ORDER BY phase_number ASC
@@ -96,6 +98,7 @@ export async function getOlympiadPhases(olympiadId: string): Promise<OlympiadPha
 }
 
 export async function getAllOlympiaads(): Promise<Olympiad[]> {
+  const sql = neon(process.env.DATABASE_URL!)
   const result = await sql`
     SELECT * FROM olympiads ORDER BY created_at DESC
   `

@@ -1,7 +1,5 @@
 import { neon } from "@neondatabase/serverless"
 
-const sql = neon(process.env.DATABASE_URL!)
-
 export interface Question {
   id: string
   admin_id: string
@@ -25,6 +23,7 @@ export async function createQuestion(
   options: string[],
   correctOption: number,
 ): Promise<Question> {
+  const sql = neon(process.env.DATABASE_URL!)
   const result = await sql`
     INSERT INTO questions (
       admin_id, subject, education_level, question_type, hardness, 
@@ -42,6 +41,7 @@ export async function createQuestion(
 }
 
 export async function getQuestionsByAdmin(adminId: string): Promise<Question[]> {
+  const sql = neon(process.env.DATABASE_URL!)
   const result = await sql`
     SELECT * FROM questions WHERE admin_id = ${adminId}
     ORDER BY created_at DESC
@@ -56,6 +56,7 @@ export async function getQuestionsByFilters(
   questionType?: string,
   hardness?: string,
 ): Promise<Question[]> {
+  const sql = neon(process.env.DATABASE_URL!)
   let query = "SELECT * FROM questions WHERE admin_id = $1"
   const params: any[] = [adminId]
   let paramIndex = 2
@@ -94,6 +95,7 @@ export async function getQuestionsForExam(
   questionType: string,
   count = 20,
 ): Promise<Question[]> {
+  const sql = neon(process.env.DATABASE_URL!)
   // Get equal distribution across hardness levels
   const perHardness = Math.ceil(count / 3)
 
@@ -137,6 +139,7 @@ export async function getQuestionsForExam(
 }
 
 export async function deleteQuestion(questionId: string): Promise<void> {
+  const sql = neon(process.env.DATABASE_URL!)
   await sql`
     DELETE FROM questions WHERE id = ${questionId}
   `

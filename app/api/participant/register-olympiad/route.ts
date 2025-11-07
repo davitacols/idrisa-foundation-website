@@ -2,9 +2,8 @@ import { neon } from "@neondatabase/serverless"
 import { getParticipantSession } from "@/lib/participant-session"
 import { type NextRequest, NextResponse } from "next/server"
 
-const sql = neon(process.env.DATABASE_URL!)
-
 export async function POST(request: NextRequest) {
+  const sql = neon(process.env.DATABASE_URL!)
   try {
     const session = await getParticipantSession()
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })

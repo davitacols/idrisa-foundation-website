@@ -2,9 +2,8 @@ import { neon } from "@neondatabase/serverless"
 import { submitExamAnswers } from "@/lib/exams"
 import { type NextRequest, NextResponse } from "next/server"
 
-const sql = neon(process.env.DATABASE_URL!)
-
 export async function POST(request: NextRequest, { params }: { params: { olympiadId: string; studentId: string } }) {
+  const sql = neon(process.env.DATABASE_URL!)
   try {
     const { olympiadId, studentId } = params
     const { answers } = await request.json()
