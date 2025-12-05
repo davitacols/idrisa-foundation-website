@@ -157,6 +157,10 @@ export default function Olympiad() {
                     <span className="font-medium text-foreground">/participant/results</span>: Scores, rankings, and
                     certificate downloads per subject and stage.
                   </li>
+                  <li>
+                    <span className="font-medium text-foreground">/participant/support</span>: Issue reporting,
+                    disqualification appeals, and guidance for retakes when allowed.
+                  </li>
                 </ul>
               </div>
               <div className="border border-border rounded-lg p-5 bg-background space-y-3">
@@ -185,6 +189,10 @@ export default function Olympiad() {
                   <li>
                     <span className="font-medium text-foreground">/admin/olympiad/exports</span>: Rankings, eligibility, and
                     certificate publishing; audit logs and download center.
+                  </li>
+                  <li>
+                    <span className="font-medium text-foreground">/admin/olympiad/settings</span>: System rules (age
+                    overrides, max subjects, retake windows), notification templates, and access control for co-admins.
                   </li>
                 </ul>
               </div>
@@ -288,6 +296,7 @@ export default function Olympiad() {
                   <li>Enrollment window, level availability, and age ranges enforced.</li>
                   <li>Subject validation per level and optional max-subject limits.</li>
                   <li>Clear error feedback for users and audit logs for admins.</li>
+                  <li>Handles disqualifications or withdrawals with state changes and notifications.</li>
                 </ul>
               </div>
             </div>
@@ -350,6 +359,16 @@ export default function Olympiad() {
               <div className="border border-border rounded-lg p-4 bg-background space-y-2">
                 <p className="font-semibold text-foreground">Results & ranks</p>
                 <p>Percentages computed per exam; rankings per (edition, level, subject, stage); exports and certificates available.</p>
+              </div>
+            </div>
+            <div className="mt-4 grid md:grid-cols-2 gap-4 text-sm text-muted-foreground">
+              <div className="bg-muted rounded-lg p-4">
+                <p className="font-semibold text-foreground">Session integrity</p>
+                <p>Locks attempts after submission, enforces one active session per participant, and supports rejoin with the remaining timer.</p>
+              </div>
+              <div className="bg-muted rounded-lg p-4">
+                <p className="font-semibold text-foreground">Error handling</p>
+                <p>Graceful recovery for network drops, auto-save retries, and admin tooling to unlock or reset attempts when policy permits.</p>
               </div>
             </div>
           </section>
@@ -521,6 +540,16 @@ export default function Olympiad() {
                 </ul>
               </div>
             </div>
+            <div className="mt-4 grid md:grid-cols-2 gap-4 text-sm text-muted-foreground">
+              <div className="bg-muted rounded-lg p-4">
+                <p className="font-semibold text-foreground">Page logic coverage</p>
+                <p>Each route lists prerequisites, shows contextual CTAs (start exam, continue, view results), and hides actions when disallowed.</p>
+              </div>
+              <div className="bg-muted rounded-lg p-4">
+                <p className="font-semibold text-foreground">Background jobs</p>
+                <p>Scheduled tasks recompute eligibility after exam close, send notifications, and rebuild rankings; admins can force reruns from the control room.</p>
+              </div>
+            </div>
           </section>
 
           <section className="border border-border rounded-lg p-8 bg-card shadow-sm">
@@ -544,6 +573,16 @@ export default function Olympiad() {
               <div className="bg-muted rounded-lg p-4">
                 <p className="font-semibold text-foreground">Exports & reporting</p>
                 <p>Download rankings, eligibility status, attendance, and question performance analytics; share public leaderboards if approved.</p>
+              </div>
+            </div>
+            <div className="mt-4 grid md:grid-cols-2 gap-4 text-sm text-muted-foreground">
+              <div className="border border-border rounded-lg p-4 bg-background">
+                <p className="font-semibold text-foreground">Certificate center</p>
+                <p>Generates PDFs for each stage, supports batch publish, and exposes download links in participant dashboards.</p>
+              </div>
+              <div className="border border-border rounded-lg p-4 bg-background">
+                <p className="font-semibold text-foreground">Appeals & issue tracking</p>
+                <p>Admins track disputes on marks or eligibility, capture resolutions, and reissue results or certificates after moderation.</p>
               </div>
             </div>
           </section>
