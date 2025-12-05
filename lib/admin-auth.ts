@@ -59,3 +59,13 @@ export async function createAdmin(email: string, password: string, fullName: str
 
   return result[0] as Admin
 }
+
+export async function verifyAdminToken(token: string): Promise<Admin | null> {
+  try {
+    // In a real app, verify JWT token here
+    // For now, we'll treat the token as the admin ID
+    return await getAdminById(token)
+  } catch (error) {
+    return null
+  }
+}
