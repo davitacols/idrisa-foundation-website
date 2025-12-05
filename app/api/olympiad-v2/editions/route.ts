@@ -6,7 +6,7 @@ import {
   getAllEditions, 
   updateEdition, 
   deleteEdition,
-  getEditionStats 
+  getEditionStatistics 
 } from "@/lib/olympiad-v2/editions"
 
 // GET all editions
@@ -26,13 +26,17 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url)
     const status = searchParams.get("status")
+    const year = searchParams.get("year")
 
-    const editions = await getAllEditions(status || undefined)
+    const editions = await getAllEditions({
+      status: status as any,
+      year: year ? parseInt(year) : undefined
+    })
 
     // Get stats for each edition
     const editionsWithStats = await Promise.all(
       editions.map(async (edition) => {
-        const stats = await getEditionStats(edition.id)
+        const stats = await getEditionStatistics(edition.id)
         return { ...edition, stats }
       })
     )
@@ -70,17 +74,13 @@ export async function POST(request: Request) {
       )
     }
 
-    const edition = await createEdition({
+    const edition = await createEdition(admin.id, {
       name,
       year,
+      enrollment_start: start_date,
+      enrollment_end: end_date,
       theme,
-      description,
-      start_date,
-      end_date,
-      min_age: min_age || 10,
-      max_age: max_age || 18,
-      created_by: admin.id,
-      stages
+      description
     })
 
     return NextResponse.json({ edition }, { status: 201 })
@@ -143,7 +143,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Edition ID required" }, { status: 400 })
     }
 
-    await deleteEdition(parseInt(id))
+    await deleteEdition(id)
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
