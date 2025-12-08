@@ -2,12 +2,47 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import {
+  Trophy,
+  Users,
+  FileText,
+  CheckSquare,
+  TrendingUp,
+  Award,
+  BookOpen,
+  Calendar,
+  ArrowUpRight,
+  ArrowDownRight,
+  Activity,
+  Target,
+  Clock,
+  Plus,
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+
+interface DashboardStats {
+  totalEditions: number
+  activeEditions: number
+  totalParticipants: number
+  totalQuestions: number
+  recentActivity: {
+    type: string
+    message: string
+    time: string
+  }[]
+}
 
 export default function AdminDashboard() {
   const router = useRouter()
   const [admin, setAdmin] = useState<any>(null)
+  const [stats, setStats] = useState<DashboardStats>({
+    totalEditions: 0,
+    activeEditions: 0,
+    totalParticipants: 0,
+    totalQuestions: 0,
+    recentActivity: [],
+  })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -22,6 +57,7 @@ export default function AdminDashboard() {
         }
 
         setAdmin(data.admin)
+        await loadStats()
       } catch (err) {
         console.log("[v0] Session check error:", err)
         router.push("/admin/login")
@@ -33,161 +69,322 @@ export default function AdminDashboard() {
     checkSession()
   }, [router])
 
-  const handleLogout = async () => {
+  const loadStats = async () => {
     try {
-      await fetch("/api/admin/logout", { method: "POST" })
-      router.push("/admin/login")
+      // Load editions stats
+      const editionsRes = await fetch("/api/olympiad-v2/editions")
+      if (editionsRes.ok) {
+        const data = await editionsRes.json()
+        const editions = data.editions || []
+        setStats((prev) => ({
+          ...prev,
+          totalEditions: editions.length,
+          activeEditions: editions.filter((e: any) => e.status === "ACTIVE").length,
+        }))
+      }
     } catch (err) {
-      console.log("[v0] Logout error:", err)
+      console.log("Stats load error:", err)
     }
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading dashboard...</p>
-        </div>
-      </div>
-    )
+    return null // Layout handles loading
   }
 
+  const quickActions = [
+    {
+      title: "Editions",
+      description: "Manage olympiad editions",
+      href: "/admin/olympiad/editions",
+      icon: Trophy,
+      color: "from-blue-500 to-blue-600",
+      bgColor: "bg-blue-50 dark:bg-blue-950",
+    },
+    {
+      title: "Participants",
+      description: "View all enrollments",
+      href: "/admin/olympiad/participants",
+      icon: Users,
+      color: "from-green-500 to-green-600",
+      bgColor: "bg-green-50 dark:bg-green-950",
+    },
+    {
+      title: "Exams",
+      description: "Configure exams",
+      href: "/admin/olympiad/exams",
+      icon: FileText,
+      color: "from-purple-500 to-purple-600",
+      bgColor: "bg-purple-50 dark:bg-purple-950",
+    },
+    {
+      title: "Marking",
+      description: "Mark & moderate",
+      href: "/admin/olympiad/marking",
+      icon: CheckSquare,
+      color: "from-orange-500 to-orange-600",
+      bgColor: "bg-orange-50 dark:bg-orange-950",
+    },
+    {
+      title: "Progression",
+      description: "Rankings & eligibility",
+      href: "/admin/olympiad/progression",
+      icon: TrendingUp,
+      color: "from-pink-500 to-pink-600",
+      bgColor: "bg-pink-50 dark:bg-pink-950",
+    },
+    {
+      title: "Finals",
+      description: "Venues & awards",
+      href: "/admin/olympiad/finals",
+      icon: Award,
+      color: "from-yellow-500 to-yellow-600",
+      bgColor: "bg-yellow-50 dark:bg-yellow-950",
+    },
+  ]
+
+  const statCards = [
+    {
+      title: "Total Editions",
+      value: stats.totalEditions,
+      change: "+2",
+      changeType: "positive",
+      icon: Trophy,
+      color: "text-blue-600",
+      bgColor: "bg-blue-100 dark:bg-blue-900",
+    },
+    {
+      title: "Active Editions",
+      value: stats.activeEditions,
+      change: stats.activeEditions > 0 ? "Live" : "None",
+      changeType: stats.activeEditions > 0 ? "positive" : "neutral",
+      icon: Activity,
+      color: "text-green-600",
+      bgColor: "bg-green-100 dark:bg-green-900",
+    },
+    {
+      title: "Total Participants",
+      value: stats.totalParticipants,
+      change: "+15%",
+      changeType: "positive",
+      icon: Users,
+      color: "text-purple-600",
+      bgColor: "bg-purple-100 dark:bg-purple-900",
+    },
+    {
+      title: "Questions in Bank",
+      value: stats.totalQuestions,
+      change: "Ready",
+      changeType: "neutral",
+      icon: BookOpen,
+      color: "text-orange-600",
+      bgColor: "bg-orange-100 dark:bg-orange-900",
+    },
+  ]
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto">
       {/* Header */}
-      <header className="bg-primary text-primary-foreground sticky top-0 z-50 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div className="mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-            <p className="text-sm text-primary-foreground/80">The Idrisa Foundation</p>
+            <h1 className="text-3xl font-bold text-foreground">
+              Welcome back, {admin?.fullName?.split(" ")[0]}!
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Here's what's happening with your olympiad today.
+            </p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="font-semibold">{admin?.fullName}</p>
-              <p className="text-sm text-primary-foreground/80">{admin?.email}</p>
+          <Link href="/admin/olympiad/editions">
+            <Button className="bg-primary hover:bg-primary/90">
+              <Plus className="w-4 h-4 mr-2" />
+              New Edition
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {statCards.map((stat) => (
+          <div
+            key={stat.title}
+            className="bg-card border border-border rounded-xl p-5 hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-start justify-between">
+              <div className={`p-2.5 rounded-lg ${stat.bgColor}`}>
+                <stat.icon className={`w-5 h-5 ${stat.color}`} />
+              </div>
+              <div
+                className={`flex items-center gap-1 text-xs font-medium ${
+                  stat.changeType === "positive"
+                    ? "text-green-600"
+                    : stat.changeType === "negative"
+                    ? "text-red-600"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {stat.changeType === "positive" && <ArrowUpRight className="w-3 h-3" />}
+                {stat.changeType === "negative" && <ArrowDownRight className="w-3 h-3" />}
+                {stat.change}
+              </div>
             </div>
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              className="text-primary border-primary-foreground hover:bg-primary-foreground/10 bg-transparent"
-            >
-              Logout
+            <div className="mt-3">
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <div className="text-sm text-muted-foreground">{stat.title}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold mb-4">Olympiad Management</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {quickActions.map((action) => (
+            <Link key={action.title} href={action.href}>
+              <div
+                className={`${action.bgColor} border border-border rounded-xl p-4 hover:shadow-lg transition-all hover:-translate-y-0.5 cursor-pointer h-full`}
+              >
+                <div
+                  className={`w-10 h-10 rounded-lg bg-gradient-to-br ${action.color} flex items-center justify-center mb-3`}
+                >
+                  <action.icon className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="font-semibold text-sm">{action.title}</h3>
+                <p className="text-xs text-muted-foreground mt-1">{action.description}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Two Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Activity */}
+        <div className="lg:col-span-2 bg-card border border-border rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">Recent Activity</h2>
+            <Button variant="ghost" size="sm" className="text-muted-foreground">
+              View all
             </Button>
           </div>
+          <div className="space-y-4">
+            {stats.recentActivity.length > 0 ? (
+              stats.recentActivity.map((activity, i) => (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <Activity className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{activity.message}</p>
+                    <p className="text-xs text-muted-foreground">{activity.time}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <Clock className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-muted-foreground text-sm">No recent activity</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Activity will appear here as participants engage
+                </p>
+              </div>
+            )}
+          </div>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-12">
-        <div className="mb-12">
-          <h2 className="text-3xl font-bold mb-2">Welcome, {admin?.fullName}!</h2>
-          <p className="text-muted-foreground">Manage olympiads, questions, and competitions</p>
-        </div>
-
-        {/* Olympiad V2 Section */}
-        <div className="mb-8">
-          <h3 className="text-2xl font-bold mb-4 text-primary">🚀 Olympiad V2 (New System)</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <Link href="/admin/olympiad-v2/editions">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-2 border-blue-300 dark:border-blue-700 rounded-lg p-6 hover:shadow-lg transition cursor-pointer">
-                <div className="text-3xl mb-4">🎯</div>
-                <h3 className="text-xl font-bold mb-2">Editions</h3>
-                <p className="text-muted-foreground">Manage olympiad editions with advanced features</p>
+        {/* Quick Links */}
+        <div className="bg-card border border-border rounded-xl p-6">
+          <h2 className="text-lg font-semibold mb-4">Quick Links</h2>
+          <div className="space-y-2">
+            <Link
+              href="/admin/question-bank"
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
+            >
+              <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                <BookOpen className="w-4 h-4 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">Question Bank</p>
+                <p className="text-xs text-muted-foreground">Manage questions</p>
               </div>
             </Link>
-
-            <Link href="/admin/olympiad-v2/participants">
-              <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-2 border-green-300 dark:border-green-700 rounded-lg p-6 hover:shadow-lg transition cursor-pointer">
-                <div className="text-3xl mb-4">👥</div>
-                <h3 className="text-xl font-bold mb-2">Participants</h3>
-                <p className="text-muted-foreground">View enrollments (self & minors)</p>
+            <Link
+              href="/admin/question-bank/add"
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
+            >
+              <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                <Plus className="w-4 h-4 text-green-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">Add Questions</p>
+                <p className="text-xs text-muted-foreground">Create new questions</p>
               </div>
             </Link>
-
-            <Link href="/admin/olympiad-v2/exams">
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-2 border-purple-300 dark:border-purple-700 rounded-lg p-6 hover:shadow-lg transition cursor-pointer">
-                <div className="text-3xl mb-4">📝</div>
-                <h3 className="text-xl font-bold mb-2">Exams</h3>
-                <p className="text-muted-foreground">Configure exams for all stages</p>
+            <Link
+              href="/admin/olympiad/editions"
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
+            >
+              <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                <Calendar className="w-4 h-4 text-purple-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">All Editions</p>
+                <p className="text-xs text-muted-foreground">View all olympiads</p>
               </div>
             </Link>
-
-            <Link href="/admin/olympiad-v2/marking">
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-2 border-orange-300 dark:border-orange-700 rounded-lg p-6 hover:shadow-lg transition cursor-pointer">
-                <div className="text-3xl mb-4">✅</div>
-                <h3 className="text-xl font-bold mb-2">Marking</h3>
-                <p className="text-muted-foreground">Manual marking & moderation</p>
+            <Link
+              href="/admin/settings"
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
+            >
+              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                <Target className="w-4 h-4 text-gray-600" />
               </div>
-            </Link>
-
-            <Link href="/admin/olympiad-v2/progression">
-              <div className="bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-950 dark:to-pink-900 border-2 border-pink-300 dark:border-pink-700 rounded-lg p-6 hover:shadow-lg transition cursor-pointer">
-                <div className="text-3xl mb-4">📈</div>
-                <h3 className="text-xl font-bold mb-2">Progression</h3>
-                <p className="text-muted-foreground">Compute rankings & eligibility</p>
-              </div>
-            </Link>
-
-            <Link href="/admin/olympiad-v2/finals">
-              <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950 dark:to-yellow-900 border-2 border-yellow-300 dark:border-yellow-700 rounded-lg p-6 hover:shadow-lg transition cursor-pointer">
-                <div className="text-3xl mb-4">🏆</div>
-                <h3 className="text-xl font-bold mb-2">Finals</h3>
-                <p className="text-muted-foreground">Venues, attendance & awards</p>
+              <div className="flex-1">
+                <p className="text-sm font-medium">Settings</p>
+                <p className="text-xs text-muted-foreground">Configure system</p>
               </div>
             </Link>
           </div>
         </div>
+      </div>
 
-        {/* Legacy System Section */}
-        <div className="mb-8">
-          <h3 className="text-2xl font-bold mb-4 text-muted-foreground">Legacy System (V1)</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <Link href="/admin/olympiad/create">
-              <div className="bg-card border border-border rounded-lg p-6 hover:shadow-lg transition cursor-pointer opacity-75">
-                <div className="text-3xl mb-4">🎓</div>
-                <h3 className="text-xl font-bold mb-2">Create Olympiad</h3>
-                <p className="text-muted-foreground">Set up a new STEM Olympiad competition</p>
-              </div>
-            </Link>
-
-            <Link href="/admin/question-bank">
-              <div className="bg-card border border-border rounded-lg p-6 hover:shadow-lg transition cursor-pointer opacity-75">
-                <div className="text-3xl mb-4">📚</div>
-                <h3 className="text-xl font-bold mb-2">Question Bank</h3>
-                <p className="text-muted-foreground">Create and manage exam questions</p>
-              </div>
-            </Link>
-
-            <Link href="/admin/olympiads">
-              <div className="bg-card border border-border rounded-lg p-6 hover:shadow-lg transition cursor-pointer opacity-75">
-                <div className="text-3xl mb-4">📊</div>
-                <h3 className="text-xl font-bold mb-2">Manage Olympiads</h3>
-                <p className="text-muted-foreground">View and manage all olympiads</p>
-              </div>
-            </Link>
+      {/* Getting Started Guide */}
+      <div className="mt-8 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-6">
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Target className="w-5 h-5 text-primary" />
+          Getting Started Guide
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-card/50 rounded-lg p-4">
+            <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold mb-3">
+              1
+            </div>
+            <h3 className="font-medium mb-1">Create an Edition</h3>
+            <p className="text-sm text-muted-foreground">
+              Set up a new olympiad with name, dates, and stages configuration.
+            </p>
           </div>
-        </div>
-
-        {/* Info Section */}
-        <div className="bg-card border border-border rounded-lg p-8">
-          <h3 className="text-2xl font-bold mb-4">Getting Started</h3>
-          <div className="space-y-4 text-muted-foreground">
-            <p>
-              <strong>1. Create an Olympiad:</strong> Start by creating a new olympiad with a name, theme, starting
-              date, and closing date. The system will automatically divide the timeline into 5 phases.
+          <div className="bg-card/50 rounded-lg p-4">
+            <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold mb-3">
+              2
+            </div>
+            <h3 className="font-medium mb-1">Build Question Bank</h3>
+            <p className="text-sm text-muted-foreground">
+              Add questions by subject and level. Configure exams for each stage.
             </p>
-            <p>
-              <strong>2. Build Question Bank:</strong> Add questions for each subject and education level. Questions are
-              categorized by type (Quiz, Theory, Practical) and difficulty level.
-            </p>
-            <p>
-              <strong>3. Monitor Competition:</strong> Track participant progress as they move through each phase. The
-              system automatically eliminates participants based on scoring criteria.
+          </div>
+          <div className="bg-card/50 rounded-lg p-4">
+            <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold mb-3">
+              3
+            </div>
+            <h3 className="font-medium mb-1">Monitor Progress</h3>
+            <p className="text-sm text-muted-foreground">
+              Track participants, mark exams, and manage progression to finals.
             </p>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   )
 }
