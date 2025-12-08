@@ -20,21 +20,22 @@ import {
 } from "lucide-react"
 
 interface Edition {
-  id: number
+  id: string
   name: string
   year: number
-  theme?: string
-  description?: string
-  start_date: string
-  end_date: string
-  status: string
-  min_age: number
-  max_age: number
+  enrollment_start: string
+  enrollment_end: string
+  status: 'DRAFT' | 'OPEN' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED'
+  active_levels: string[]
+  active_subjects: Record<string, string[]>
+  age_rules: Record<string, { min: number; max: number }>
+  max_subjects_per_participant: number
+  reference_date?: string
+  created_by_admin_id: string
   created_at: string
-  stats?: {
-    total_participants: number
-    total_stages: number
-  }
+  updated_at: string
+  participant_count?: number
+  created_by_name?: string
 }
 
 interface Stage {
@@ -52,9 +53,10 @@ export default function EditionsPage() {
   const [loading, setLoading] = useState(true)
   const [editions, setEditions] = useState<Edition[]>([])
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [showInitDb, setShowInitDb] = useState(false)
-  const [initDbLoading, setInitDbLoading] = useState(false)
-  const [initDbMessage, setInitDbMessage] = useState("")
+  const [showDbInitModal, setShowDbInitModal] = useState(false)
+  const [dbStatus, setDbStatus] = useState<{ initialized: boolean; tables: string[] } | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filterStatus, setFilterStatus] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [formData, setFormData] = useState({
