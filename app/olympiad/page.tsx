@@ -104,19 +104,35 @@ export default function Olympiad() {
         <div className="max-w-6xl mx-auto space-y-12">
           <section className="text-center space-y-4">
             <p className="text-sm uppercase tracking-[0.25em] text-primary">STEM Olympiad</p>
-            <h1 className="text-5xl font-bold">A full-featured Olympiad module for our platform</h1>
+            <h1 className="text-5xl font-bold">Competitive STEM Excellence Program</h1>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              Built for participants, guardians, teachers, and admins to manage nationwide STEM competitions—
-              from enrollment and eligibility to multi-stage exams, rankings, and certificates.
+              Designed for students who want to challenge themselves through competitive STEM competitions. 
+              Test your knowledge, compete with peers nationwide, and showcase your scientific excellence.
             </p>
             <div className="flex flex-wrap justify-center gap-3 pt-2 text-sm text-muted-foreground">
               <span className="px-3 py-1 rounded-full bg-primary/10 text-primary">Primary</span>
-              <span className="px-3 py-1 rounded-full bg-primary/10 text-primary">O’Level</span>
-              <span className="px-3 py-1 rounded-full bg-primary/10 text-primary">A’Level</span>
-              <span className="px-3 py-1 rounded-full bg-accent/10 text-accent-foreground">Self or Minor Enrollment</span>
-              <span className="px-3 py-1 rounded-full bg-accent/10 text-accent-foreground">Admin-Driven Finals</span>
-              <span className="px-3 py-1 rounded-full bg-primary-foreground/10 text-primary-foreground">Question Bank & Exams</span>
-              <span className="px-3 py-1 rounded-full bg-primary-foreground/10 text-primary-foreground">Results, Rankings, Certificates</span>
+              <span className="px-3 py-1 rounded-full bg-primary/10 text-primary">O'Level</span>
+              <span className="px-3 py-1 rounded-full bg-primary/10 text-primary">A'Level</span>
+              <span className="px-3 py-1 rounded-full bg-accent/10 text-accent-foreground">Competitive Exams</span>
+              <span className="px-3 py-1 rounded-full bg-accent/10 text-accent-foreground">National Rankings</span>
+              <span className="px-3 py-1 rounded-full bg-primary-foreground/10 text-primary-foreground">Stage Progression</span>
+              <span className="px-3 py-1 rounded-full bg-primary-foreground/10 text-primary-foreground">Awards & Recognition</span>
+            </div>
+            
+            <div className="bg-muted border border-border rounded-lg p-6 max-w-2xl mx-auto mt-6">
+              <h3 className="text-lg font-semibold text-foreground mb-2">Looking for Scholarships?</h3>
+              <p className="text-muted-foreground mb-4">
+                The Olympiad is for competitive STEM challenges. If you're interested in financial support 
+                for your education, visit our Scholarship Portal.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <Link href="/scholarship">
+                  <Button variant="outline">Visit Scholarship Portal</Button>
+                </Link>
+                <Link href="/participant/signup">
+                  <Button>Register for Olympiad</Button>
+                </Link>
+              </div>
             </div>
           </section>
 

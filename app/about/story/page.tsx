@@ -50,6 +50,34 @@ export default function OurStoryPage() {
                 The Idrisa Foundation (U) Limited was established in 2025 by{" "}
                 <strong className="text-foreground">Idrisa Kiryowa</strong>, a visionary Master's degree student
                 pursuing his studies in Russia after completing significant research and education in India.
+                His scientific credibility can be verified through his{" "}
+                <a 
+                  href="https://orcid.org/0009-0007-3178-0424" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline underline"
+                >
+                  ORCID profile (0009-0007-3178-0424)
+                </a>
+                ,{" "}
+                <a 
+                  href="https://www.webofscience.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline underline"
+                >
+                  Web of Science publications
+                </a>
+                , and{" "}
+                <a 
+                  href="https://www.researchgate.net" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline underline"
+                >
+                  ResearchGate contributions
+                </a>
+                .
               </p>
 
               <p className="text-lg text-muted-foreground leading-relaxed mb-8">
@@ -60,7 +88,17 @@ export default function OurStoryPage() {
               </p>
 
               <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-                With significant research contributions in medicine and other scientific fields, Idrisa founded the
+                With significant research contributions in medicine and other scientific fields—published through
+                reputable{" "}
+                <a 
+                  href="https://www.elsevier.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline underline"
+                >
+                  publishing houses
+                </a>
+                and verified by international scientific databases—Idrisa founded the
                 Idrisa Foundation as his way of giving back to Uganda and his hometown of Entebbe. The Foundation
                 represents his belief that every young person, regardless of their circumstances, deserves the
                 opportunity to thrive and contribute to scientific progress.

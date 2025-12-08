@@ -80,8 +80,8 @@ export function Header() {
       label: "Our Programs",
       href: "/programs",
       dropdown: [
-        { label: "Talent Scouting & Outreach", href: "/programs/talent-scouting", icon: Trophy },
-        { label: "Scholarships & Bursaries", href: "/programs/scholarships", icon: GraduationCap },
+        { label: "STEM Olympiad", href: "/olympiad", icon: Trophy },
+        { label: "Scholarships", href: "/scholarship", icon: GraduationCap },
         { label: "Mentorship & Incubation", href: "/programs/mentorship", icon: Users },
       ],
     },
