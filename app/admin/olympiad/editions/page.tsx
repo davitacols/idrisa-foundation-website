@@ -57,23 +57,27 @@ export default function EditionsPage() {
   const [dbStatus, setDbStatus] = useState<{ initialized: boolean; tables: string[] } | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterStatus, setFilterStatus] = useState<string>("all")
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
+  const [initDbLoading, setInitDbLoading] = useState(false)
+  const [initDbMessage, setInitDbMessage] = useState("")
   const [formData, setFormData] = useState({
     name: "",
     year: new Date().getFullYear(),
-    theme: "",
-    description: "",
-    start_date: "",
-    end_date: "",
-    min_age: 10,
-    max_age: 18,
-    stages: [
-      { stage_number: 1, stage_name: "Online Quiz", stage_type: "ONLINE_QUIZ", start_date: "", end_date: "", pass_percentage: 70 },
-      { stage_number: 2, stage_name: "Online Theory", stage_type: "ONLINE_THEORY", start_date: "", end_date: "", pass_percentage: 60 },
-      { stage_number: 3, stage_name: "Online Practical", stage_type: "ONLINE_PRACTICAL", start_date: "", end_date: "", pass_count: 50 },
-      { stage_number: 4, stage_name: "Final Physical", stage_type: "FINAL_PHYSICAL", start_date: "", end_date: "" }
-    ] as Stage[]
+    enrollment_start: "",
+    enrollment_end: "",
+    active_levels: ["Primary", "O-Level", "A-Level"],
+    active_subjects: {
+      "Primary": ["Math", "Science", "ICT"],
+      "O-Level": ["Math", "Biology", "Chemistry", "Physics", "ICT", "Agriculture"],
+      "A-Level": ["Math", "Biology", "Chemistry", "Physics", "ICT", "Agriculture"]
+    },
+    age_rules: {
+      "Primary": { min: 9, max: 15 },
+      "O-Level": { min: 11, max: 18 },
+      "A-Level": { min: 15, max: 21 }
+    },
+    max_subjects_per_participant: 3,
+    reference_date: "",
+    created_by_admin_id: "admin-1"
   })
 
   useEffect(() => {
@@ -82,7 +86,7 @@ export default function EditionsPage() {
 
   const loadEditions = async () => {
     try {
-      const response = await fetch("/api/olympiad-v2/editions")
+      const response = await fetch("/api/olympiad/editions")
       if (response.ok) {
         const data = await response.json()
         setEditions(data.editions || [])
@@ -98,11 +102,11 @@ export default function EditionsPage() {
     setInitDbLoading(true)
     setInitDbMessage("")
     try {
-      const response = await fetch("/api/olympiad-v2/init-db", { method: "POST" })
+      const response = await fetch("/api/olympiad/database", { method: "POST" })
       const data = await response.json()
       if (response.ok) {
         setInitDbMessage("Database tables created successfully!")
-        setTimeout(() => setShowInitDb(false), 2000)
+        setTimeout(() => setShowDbInitModal(false), 2000)
       } else {
         setInitDbMessage(`Error: ${data.error || "Failed to create tables"}`)
       }
@@ -116,7 +120,7 @@ export default function EditionsPage() {
   const handleCreateEdition = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const response = await fetch("/api/olympiad-v2/editions", {
+      const response = await fetch("/api/olympiad/editions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
@@ -138,25 +142,29 @@ export default function EditionsPage() {
     setFormData({
       name: "",
       year: new Date().getFullYear(),
-      theme: "",
-      description: "",
-      start_date: "",
-      end_date: "",
-      min_age: 10,
-      max_age: 18,
-      stages: [
-        { stage_number: 1, stage_name: "Online Quiz", stage_type: "ONLINE_QUIZ", start_date: "", end_date: "", pass_percentage: 70 },
-        { stage_number: 2, stage_name: "Online Theory", stage_type: "ONLINE_THEORY", start_date: "", end_date: "", pass_percentage: 60 },
-        { stage_number: 3, stage_name: "Online Practical", stage_type: "ONLINE_PRACTICAL", start_date: "", end_date: "", pass_count: 50 },
-        { stage_number: 4, stage_name: "Final Physical", stage_type: "FINAL_PHYSICAL", start_date: "", end_date: "" }
-      ]
+      enrollment_start: "",
+      enrollment_end: "",
+      active_levels: ["Primary", "O-Level", "A-Level"],
+      active_subjects: {
+        "Primary": ["Math", "Science", "ICT"],
+        "O-Level": ["Math", "Biology", "Chemistry", "Physics", "ICT", "Agriculture"],
+        "A-Level": ["Math", "Biology", "Chemistry", "Physics", "ICT", "Agriculture"]
+      },
+      age_rules: {
+        "Primary": { min: 9, max: 15 },
+        "O-Level": { min: 11, max: 18 },
+        "A-Level": { min: 15, max: 21 }
+      },
+      max_subjects_per_participant: 3,
+      reference_date: "",
+      created_by_admin_id: "admin-1"
     })
   }
 
-  const handleDeleteEdition = async (id: number) => {
+  const handleDeleteEdition = async (id: string) => {
     if (!confirm("Are you sure you want to delete this edition? This action cannot be undone.")) return
     try {
-      const response = await fetch(`/api/olympiad-v2/editions?id=${id}`, { method: "DELETE" })
+      const response = await fetch(`/api/olympiad/editions?id=${id}`, { method: "DELETE" })
       if (response.ok) {
         await loadEditions()
       }
@@ -176,9 +184,9 @@ export default function EditionsPage() {
   }
 
   const filteredEditions = editions.filter(edition => {
-    const matchesSearch = edition.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      edition.theme?.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = statusFilter === "all" || edition.status === statusFilter
+    const matchesSearch = edition.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         edition.year.toString().includes(searchTerm)
+    const matchesStatus = filterStatus === "all" || edition.status === filterStatus
     return matchesSearch && matchesStatus
   })
 
@@ -280,16 +288,16 @@ export default function EditionsPage() {
           <input
             type="text"
             placeholder="Search editions..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </div>
         <div className="relative">
           <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
             className="pl-10 pr-8 py-2 border border-border rounded-lg bg-background appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             <option value="all">All Status</option>
@@ -340,16 +348,16 @@ export default function EditionsPage() {
                   <div className="flex flex-wrap gap-4 text-sm">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Calendar className="w-4 h-4" />
-                      <span>{new Date(edition.start_date).toLocaleDateString()} - {new Date(edition.end_date).toLocaleDateString()}</span>
+                      {new Date(edition.enrollment_start).toLocaleDateString()} to {new Date(edition.enrollment_end).toLocaleDateString()}
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Users className="w-4 h-4" />
-                      <span>Ages {edition.min_age}-{edition.max_age}</span>
+                      <span>Ages {edition.age_rules?.Primary?.min || 9}-{edition.age_rules?.Primary?.max || 15}</span>
                     </div>
                     {edition.stats && (
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Users className="w-4 h-4" />
-                        <span>{edition.stats.total_participants} participants</span>
+                        <span>{edition.participant_count || 0} participants</span>
                       </div>
                     )}
                   </div>
@@ -379,7 +387,7 @@ export default function EditionsPage() {
       )}
 
       {/* Initialize DB Modal */}
-      {showInitDb && (
+      {showDbInitModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full shadow-xl">
             <h3 className="text-xl font-bold mb-2">Initialize Database</h3>
@@ -431,61 +439,41 @@ export default function EditionsPage() {
                     className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-2">Theme</label>
-                  <input
-                    type="text"
-                    value={formData.theme}
-                    onChange={(e) => setFormData({ ...formData, theme: e.target.value })}
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    placeholder="e.g., Innovation for Sustainability"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-2">Description</label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    rows={3}
-                    placeholder="Brief description of the olympiad"
-                  />
-                </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Start Date *</label>
+                  <label className="block text-sm font-medium mb-2">Enrollment Start *</label>
                   <input
-                    type="date"
+                    type="datetime-local"
                     required
-                    value={formData.start_date}
-                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                    value={formData.enrollment_start}
+                    onChange={(e) => setFormData({ ...formData, enrollment_start: e.target.value })}
                     className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">End Date *</label>
+                  <label className="block text-sm font-medium mb-2">Enrollment End *</label>
                   <input
-                    type="date"
+                    type="datetime-local"
                     required
-                    value={formData.end_date}
-                    onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                    value={formData.enrollment_end}
+                    onChange={(e) => setFormData({ ...formData, enrollment_end: e.target.value })}
                     className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Min Age</label>
+                  <label className="block text-sm font-medium mb-2">Max Subjects Per Participant</label>
                   <input
                     type="number"
-                    value={formData.min_age}
-                    onChange={(e) => setFormData({ ...formData, min_age: parseInt(e.target.value) })}
+                    value={formData.max_subjects_per_participant}
+                    onChange={(e) => setFormData({ ...formData, max_subjects_per_participant: parseInt(e.target.value) })}
                     className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Max Age</label>
+                  <label className="block text-sm font-medium mb-2">Reference Date (for age calculation)</label>
                   <input
-                    type="number"
-                    value={formData.max_age}
-                    onChange={(e) => setFormData({ ...formData, max_age: parseInt(e.target.value) })}
+                    type="date"
+                    value={formData.reference_date}
+                    onChange={(e) => setFormData({ ...formData, reference_date: e.target.value })}
                     className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
@@ -559,12 +547,12 @@ export default function EditionsPage() {
                 </div>
               </div>
 
-              <div className="flex gap-3 justify-end">
+              <div className="flex justify-end gap-3">
                 <Button type="button" variant="outline" onClick={() => setShowCreateModal(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">
-                  Create Edition
+                <Button type="submit" disabled={loading}>
+                  {loading ? "Creating..." : "Create Edition"}
                 </Button>
               </div>
             </form>
