@@ -80,6 +80,17 @@ export async function getOlympiadsByAdmin(adminId: string): Promise<Olympiad[]> 
   return result as Olympiad[]
 }
 
+export async function getActiveOlympiads(): Promise<Olympiad[]> {
+  const sql = neon(process.env.DATABASE_URL!)
+  const now = new Date().toISOString()
+  const result = await sql`
+    SELECT * FROM olympiads
+    WHERE starting_date <= ${now} AND closing_date >= ${now}
+    ORDER BY created_at DESC
+  `
+  return result as Olympiad[]
+}
+
 export async function getOlympiadById(id: string): Promise<Olympiad | null> {
   const sql = neon(process.env.DATABASE_URL!)
   const result = await sql`
