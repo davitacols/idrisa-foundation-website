@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect, useState } from "react"
@@ -18,6 +19,7 @@ import {
   Target,
   Clock,
   Plus,
+  Newspaper,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -181,6 +183,17 @@ export default function AdminDashboard() {
     },
   ]
 
+  const contentActions = [
+    {
+      title: "Success Stories",
+      description: "Manage success stories",
+      href: "/admin/dashboard/stories",
+      icon: Newspaper,
+      color: "from-red-500 to-red-600",
+      bgColor: "bg-red-50 dark:bg-red-950",
+    },
+  ]
+
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto">
       {/* Header */}
@@ -241,6 +254,28 @@ export default function AdminDashboard() {
         <h2 className="text-xl font-semibold mb-4">Olympiad Management</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {quickActions.map((action) => (
+            <Link key={action.title} href={action.href}>
+              <div
+                className={`${action.bgColor} border border-border rounded-xl p-4 hover:shadow-lg transition-all hover:-translate-y-0.5 cursor-pointer h-full`}
+              >
+                <div
+                  className={`w-10 h-10 rounded-lg bg-gradient-to-br ${action.color} flex items-center justify-center mb-3`}
+                >
+                  <action.icon className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="font-semibold text-sm">{action.title}</h3>
+                <p className="text-xs text-muted-foreground mt-1">{action.description}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Content Management */}
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold mb-4">Content Management</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {contentActions.map((action) => (
             <Link key={action.title} href={action.href}>
               <div
                 className={`${action.bgColor} border border-border rounded-xl p-4 hover:shadow-lg transition-all hover:-translate-y-0.5 cursor-pointer h-full`}
