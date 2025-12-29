@@ -1,8 +1,10 @@
 import { getAdminSession } from "@/lib/session"
 import { type NextRequest, NextResponse } from "next/server"
-import { sql, ensureQuestionBankTable } from "@/lib/olympiad-v2/database"
+import { neon } from '@neondatabase/serverless'
+import { ensureQuestionBankTable } from "@/lib/olympiad-v2/database"
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const sql = neon(process.env.DATABASE_URL!)
   try {
     const session = await getAdminSession()
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })

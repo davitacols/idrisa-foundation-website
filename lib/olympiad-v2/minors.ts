@@ -79,6 +79,7 @@ export async function updateMinorProfile(
   userId: string,
   updates: Partial<CreateMinorProfileInput>
 ): Promise<MinorProfile> {
+  const sql = neon(process.env.DATABASE_URL!);
   // Verify ownership
   const existing = await getMinorProfileById(id);
   if (!existing || existing.created_by_user_id !== userId) {
@@ -111,6 +112,7 @@ export async function updateMinorProfile(
  * Delete minor profile
  */
 export async function deleteMinorProfile(id: string, userId: string): Promise<boolean> {
+  const sql = neon(process.env.DATABASE_URL!);
   // Verify ownership
   const existing = await getMinorProfileById(id);
   if (!existing || existing.created_by_user_id !== userId) {
@@ -130,6 +132,7 @@ export async function deleteMinorProfile(id: string, userId: string): Promise<bo
  * Check if user owns a minor profile
  */
 export async function userOwnsMinor(userId: string, minorId: string): Promise<boolean> {
+  const sql = neon(process.env.DATABASE_URL!);
   const result = await sql`
     SELECT id FROM minor_profiles
     WHERE id = ${minorId} AND created_by_user_id = ${userId}
@@ -145,6 +148,7 @@ export async function getMinorWithEnrollmentCount(minorId: string): Promise<{
   minor: MinorProfile;
   enrollment_count: number;
 }> {
+  const sql = neon(process.env.DATABASE_URL!);
   const minor = await getMinorProfileById(minorId);
   if (!minor) {
     throw new Error('Minor profile not found');
